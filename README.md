@@ -1,4 +1,4 @@
 WifiWizardDemo
 ==============
 
-Demo phonegap application for WifiWIzard
+Demo phonegap application for WifiWizard plugin.
