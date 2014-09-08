@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<!--
+    Copyright (c) 2012-2014 Adobe Systems Incorporated. All rights reserved.
+
+    Licensed to the Apache Software Foundation (ASF) under one
+    or more contributor license agreements.  See the NOTICE file
+    distributed with this work for additional information
+    regarding copyright ownership.  The ASF licenses this file
+    to you under the Apache License, Version 2.0 (the
+    "License"); you may not use this file except in compliance
+    with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+     KIND, either express or implied.  See the License for the
+    specific language governing permissions and limitations
+    under the License.
+-->
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="format-detection" content="telephone=no" />
+        <meta name="msapplication-tap-highlight" content="no" />
+        <!-- WARNING: for iOS 7, remove the width=device-width and height=device-height attributes. See https://issues.apache.org/jira/browse/CB-4323 -->
+        <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
+        <link rel="stylesheet" type="text/css" href="css/index.css" />
+        <title>WifiWizard Test Application</title>
+				<script type="text/javascript">
+		
+		var addToStatus = function(message) {
+			console.log(message);
+			var newP = document.createElement("p");
+			var node = document.createTextNode(message);
+			var status = document.getElementById("status");
+			newP.appendChild(node);
+			// document.getElementById("status").appendChild(newP);
+			status.insertBefore(newP, status.firstChild);
+		}	
+		
+		var test = {
+			addNetwork: function() {
+				
+				var ssid =  document.getElementById("SSID").value;
+				var pass = document.getElementById("password").value;
+				
+				var wifiConfiguration = WifiWizard.formatWifiConfig(ssid, pass, 'WPA');
+				
+				
+				
+				WifiWizard.addNetwork(wifiConfiguration, addToStatus, addToStatus);
+				addToStatus(wifiConfiguration.SSID + " " + wifiConfiguration.Password);
+				addToStatus("Adding Network...");
+			},
+			
+			removeNetwork: function() {
+				var ssid =  document.getElementById("SSID").value;
+				addToStatus("Removing network: " + ssid);				
+				WifiWizard.removeNetwork(ssid, addToStatus, addToStatus);
+			},
+			
+			handleList: function(networkList) {
+				addToStatus(networkList.join(" "));
+			},
+			
+			listNetworks: function() {
+				WifiWizard.listNetworks(test.handleList);	
+				addToStatus("Listing networks...");
+			},
+
+			disconnect: function() {
+				var ssid =  document.getElementById("SSID").value;
+				addToStatus("Disconnecting: " + ssid);
+				WifiWizard.disconnectNetwork(ssid, addToStatus, addToStatus);
+			},
+			
+			connect: function() {
+				var ssid =  document.getElementById("SSID").value;
+				addToStatus("Connecting: " + ssid);
+				WifiWizard.connectNetwork(ssid, addToStatus, addToStatus);
+			},
+						
+			clear: function() {
+				document.getElementById("status").innerHTML="";
+				addToStatus("WifiTest Cleared.");
+			}
+		};
+		
+
+		</script>
+    </head>
+    <body>
+        <div class="app">
+            <h1>WifiWizard Test</h1>
+            <!-- <div id="deviceready" class="blink">
+                <p class="event listening">Connecting to Device</p>
+                <p class="event received">Device is Ready</p>
+            </div> -->
+			<br />
+			<div id="testform">
+				<form name="WifiTester">
+					<input type="text" name="SSID" id="SSID" placeholder="SSID"><br>
+					<input type="text" name="password" id="password" placeholder="password"><br>
+					<button type="button" name="add_network" onclick='test.addNetwork()'>Add Network</button>
+					<button type="button" name="remove_network" onclick='test.removeNetwork()'>Remove Network</button>
+					<button type="button" name="connect_network" onclick='test.connect()'>Connect</button>
+					<button type="button" name="disconnect_network" onclick='test.disconnect()'>Disconnect</button>
+					<button type="button" name="list_networks" onclick='test.listNetworks()'>List Networks</button>
+					<button type="button" name="clear_test" onclick='test.clear()'>Clear</button>
+				</form>
+			</div>
+			<br />
+			<div id="status">
+				
+			</div>
+		</div>
+		
+        <script type="text/javascript" src="cordova.js"></script>
+        <script type="text/javascript" src="js/index.js"></script>
+        <script type="text/javascript">
+            app.initialize();
+        </script>
+		<script src="WifiWizard.js"></script>
+
+		<script>
+		// Loaded!
+		addToStatus("WifiTest loaded.");
+		var wwIsObject = (typeof WifiWizard == "object") ? true : false ;
+		var wwFunctions = [];
+		if (wwIsObject) {
+			for (var prop in WifiWizard) {
+				wwFunctions.push(prop);
+			}
+			wwFunctions.join(", ")
+			addToStatus("WifiWizard functions: " + wwFunctions.join(", "));
+		}
+		else {
+			addToStatus("Variable WifiWizard not an object.");
+		}
+		
+			
+		</script>
+		
+    </body>
+</html>
