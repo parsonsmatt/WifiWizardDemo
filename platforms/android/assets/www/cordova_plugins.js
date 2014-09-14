@@ -56,7 +56,7 @@ module.exports.metadata =
     "org.apache.cordova.network-information": "0.2.11",
     "org.apache.cordova.dialogs": "0.2.9",
     "org.apache.cordova.vibration": "0.3.10",
-    "com.pylonproducts.wifiwizard": "0.0.1"
+    "com.pylonproducts.wifiwizard": "0.2.0"
 }
 // BOTTOM OF METADATA
 });

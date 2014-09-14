@@ -69,8 +69,6 @@ public class WifiWizard extends CordovaPlugin {
 		return false;	
 	}
 	
-	// Them helper methods!
-	
 	/**
 	 * This methods adds a network to the list of available WiFi networks.
 	 * If the network already exists, then it updates it.
@@ -86,17 +84,45 @@ public class WifiWizard extends CordovaPlugin {
 		Log.d(TAG, "WifiWizard: addNetwork entered.");
 		
 		try {
-			String authType = data.getString(2);
+			// data's order for ANY object is 0: ssid, 1: authentication algorithm, 
+			// 2+: authentication information.
+			String authType = data.getString(1);
 			
-			
-			// TODO: Check if network exists, if so, then do an update instead.
-			
+						
 			if (authType.equals("WPA")) {
-				// TODO: connect/configure for WPA
+				// WPA Data format:
+				// 0: ssid
+				// 1: auth
+				// 2: password
+				String newSSID = data.getString(0);
+				wifi.SSID = newSSID;
+				String newPass = data.getString(2); 	
+				wifi.preSharedKey = newPass;
+				
+				wifi.status = WifiConfiguration.Status.ENABLED;        
+				wifi.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.TKIP);
+				wifi.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.CCMP);
+				wifi.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA_PSK);
+				wifi.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.TKIP);
+				wifi.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.CCMP);
+				wifi.allowedProtocols.set(WifiConfiguration.Protocol.RSN);
+				
+				wifi.networkId = ssidToNetworkId(newSSID);
+				
+				if ( wifi.networkId == -1 ) {
+					wifiManager.addNetwork(wifi);
+					callbackContext.success(newSSID + " successfully added.");
+				}
+				else {
+					wifiManager.updateNetwork(wifi);
+					callbackContext.success(newSSID + " successfully updated.");
+				}
+				
+				wifiManager.saveConfiguration();
+				return true;
 			}
 			else if (authType.equals("WEP")) {
 				// TODO: connect/configure for WEP
-				// or not? screw wep
 				Log.d(TAG, "WEP unsupported.");
 				callbackContext.error("WEP unsupported");
 				return false;
@@ -107,26 +133,6 @@ public class WifiWizard extends CordovaPlugin {
 				callbackContext.error("Wifi Authentication Type Not Supported: " + authType);
 				return false;
 			}
-			
-			// Currently, just assuming WPA, as that is the only one that is supported.
-			String newSSID = data.getString(0);
-			wifi.SSID = newSSID;
-			String newPass = data.getString(1); 	// Invalid PSK error happening here.
-			wifi.preSharedKey = newPass;
-			
-			Log.d(TAG, "SSID: " + newSSID + ", Pass: " + newPass);
-			
-			wifi.status = WifiConfiguration.Status.ENABLED;        
-			wifi.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.TKIP);
-			wifi.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.CCMP);
-			wifi.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA_PSK);
-			wifi.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.TKIP);
-			wifi.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.CCMP);
-			wifi.allowedProtocols.set(WifiConfiguration.Protocol.RSN);
-			wifiManager.addNetwork(wifi);
-			wifiManager.saveConfiguration();
-			
-			return true;
 		}
 		catch (Exception e) {
 			callbackContext.error(e.getMessage());
@@ -278,7 +284,7 @@ public class WifiWizard extends CordovaPlugin {
 	
 	/**
 	 *	This method takes a given String, searches the current list of configured WiFi
-	 * 	networks, and returns the networkId for the netowrk if the SSID matches. If not,
+	 * 	networks, and returns the networkId for the network if the SSID matches. If not,
 	 * 	it returns -1.
 	 */
 	private int ssidToNetworkId(String ssid) {
@@ -287,11 +293,8 @@ public class WifiWizard extends CordovaPlugin {
 		
 		// For each network in the list, compare the SSID with the given one
 		for (WifiConfiguration test : currentNetworks) {
-			Log.d(TAG, "Looking for: " + ssid + ", found: " + test.SSID);
-			Log.d(TAG, "Is it a match? " + (ssid.equals(test.SSID)));
 			if ( test.SSID.equals(ssid) ) {
 				networkId = test.networkId;
-				Log.d(TAG, "NetworkID is now: " + networkId);
 			}
 		}
 		
